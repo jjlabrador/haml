@@ -16,11 +16,11 @@ h1
 h1
   color: red
 SASS_ALT
-    assert_equal(css2sass(css), sass)
-    assert_equal(css2sass(css, :alternate => true), sass_alt)
+    assert_equal(sass, css2sass(css))
+    assert_equal(sass_alt, css2sass(css, :alternate => true))
   end
 
-  def test_nesting
+  def test_nesting_1
     css = <<-CSS
 li {
   display: none;
@@ -52,7 +52,7 @@ li
     &:hover
       :text-decoration underline
 SASS
-    assert_equal(css2sass(css), sass)
+    assert_equal(sass, css2sass(css))
   end
 
   def test_nesting_2
@@ -87,7 +87,7 @@ li.menu
   a:hover
     :color red
 SASS
-    assert_equal(css2sass(css), sass)
+    assert_equal(sass, css2sass(css))
   end
 
   def test_comments_oneline
@@ -118,16 +118,19 @@ CSS
 foo
   :bar baz
 
+
 monkey
   :tree true
+
 
 div.banana
   :potassium high
 
+
 .arewethereyet
   :almost there
 SASS
-    assert_equal(css2sass(css), sass)
+    assert_equal(sass, css2sass(css))
   end
 
   def test_comments_multiline
@@ -163,20 +166,135 @@ CSS
 elephant.rawr
   :rampages excessively
 
+
 span.turkey
   :isdinner true
 
+
 .turducken
   :chimera not_really
+
 
 #overhere
   :bored sorta
   :better_than thread_pools
 
+
 #one_more
   :finally srsly
 SASS
     assert_equal(css2sass(css), sass)
+  end
+
+  def test_fold_commas_1
+    css = <<-CSS
+li .one {
+  color: red;
+}
+li .two {
+  color: red;
+}
+CSS
+    sass = <<-SASS
+li
+  .one, .two
+    :color red
+SASS
+    assert_equal(sass, css2sass(css))
+  end
+
+  def test_fold_commas_2
+    css = <<-CSS
+li .one {
+  color: red;
+}
+li .two {
+  color: red;
+}
+li .three {
+  color: red;
+  mu: fasa;
+}
+CSS
+    sass = <<-SASS
+li
+  .one, .two, .three
+    :color red
+  .three
+    :mu fasa
+SASS
+    assert_equal(sass, css2sass(css))
+  end
+
+  def test_fold_commas_3
+    css = <<-CSS
+.one, .two {
+  color: green;
+}
+
+.two, .three {
+  color: red;
+}
+CSS
+    sass = <<-SASS
+.one
+  :color green
+
+
+.two
+  :color green
+  :color red
+
+
+.three
+  :color red
+SASS
+    assert_equal(sass, css2sass(css))
+  end
+
+  def test_bad_formatting
+    css = <<-CSS
+hello {
+  parent: true;
+}
+
+hello  there {
+  parent: false;
+}
+hello who  {
+  hoo: false;
+}
+hello why {
+   y: true;
+}
+hello when {
+  wen:  nao;
+}
+
+
+down_here { yeah: true; }
+CSS
+    sass = <<-SASS
+hello
+  :parent true
+
+  there
+    :parent false
+
+  who
+    :hoo false
+
+  why
+    :y true
+
+  when
+    :wen nao
+
+
+down_here
+  :yeah true
+SASS
+    assert_equal(sass, css2sass(css))
   end
 
   private
